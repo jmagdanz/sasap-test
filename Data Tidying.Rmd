@@ -84,3 +84,66 @@ catch_summarize <- catch_clean_mutated %>%
 catch_summarize
 
 ```
+
+get another data frame with regional definitions.
+
+```{r join example}
+
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1", method = "libcurl"),
+                        stringsAsFactors = FALSE)
+
+head(region_defs)
+
+```
+
+select columns
+
+``` {r}
+region_defs <- region_defs %>% 
+  select(code, mgmtArea)
+
+head(region_defs)
+
+```
+Suggestion: DO NOT USE PIPE OPERATOR IN JOIN. Makes it harder to troubleshoot problems
+Jeanette almost always uses left joints (99% of the time)
+
+``` {r}
+
+catch_join <- left_join(catch_clean_mutated, region_defs, by = c("Region" = "code"))
+  
+head(catch_join)
+
+```
+
+7.13 Separate and Unite
+
+```{r}
+
+dates_df <- data.frame(date = c("5/24/1930",
+                                "5/25/1930",
+                                "5/26/1930",
+                                "5/27/1930",
+                                "5/28/1930"),
+                       stringsAsFactors = FALSE)
+
+dates_separate <- dates_df %>% 
+  separate(date, c("month", "day", "year"), "/", remove=F) %>%  # remove switch keeps source column
+  unite(col=date_iso, year, month, day, sep="-", remove=F)
+
+
+dates_separate
+```
+
+go the other way.
+
+```{r}
+
+
+
+
+```
+
+
+
+

@@ -29,25 +29,62 @@ esc <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auu
 head(esc)
 ```
 
-`
-help summarize
+
 
 ```{r}
 esc_BB <- esc %>%
-  filter(SASAP.Region == "Bristol Bay") %>% 
-  group_by(Location) %>% 
-  summarise(count = sum(DailyCount))
+  filter(SASAP.Region == "Bristol Bay", Species == "Sockeye") %>% 
+  separate(sampleDate, c("Year", "Month", "Day"), "-", remove=F) %>% 
+  group_by(SASAP.Region, Location, Year, Species) %>% 
+  summarise(AnnualCount = sum(DailyCount))
 
-head(esc_BB)
+esc_BB
 ```
 
 
 
 # Prepare Escapment Goal Data
 
+```{r}
+
+goals <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/knb.92014.1", method = "libcurl"), stringsAsFactors = FALSE)
+
+head(goals)
+
+
+```
+
+```{r}
+
+goals_BB <- goals %>%
+  filter(Species=="Sockeye", Region == "Bristol Bay", Lower != "eliminated") %>%
+  select(Species, Region, System, Lower, Upper, Type, Initial.Year) %>%
+  mutate(Lower = as.numeric(Lower), Initial.Year = as.numeric(Initial.Year)) %>% 
+  group_by(System)
+
+goals_BB
+```
+
+# Join Tables
+
+```{r}
+
+eval <- left_join(esc_BB, goals_BB, by = c("Location" = "System")) %>% 
+  mutate(Lower.Goal.Exceeded = if_else(AnnualCount > Lower,TRUE,FALSE),
+         Upper.Goal.Exceeded = if_else(AnnualCount > Upper,TRUE,FALSE),
+         Goal.Met = if_else(AnnualCount >Lower & AnnualCount < Upper, TRUE,FALSE)) %>% 
+  select(Region, Location, Year, Species.x, Lower, Upper, Type, AnnualCount, Goal.Met, Lower.Goal.Exceeded, Upper.Goal.Exceeded)
+  
+
+head(eval)
+
+
+```
 
 
 
-#Evaluate EScapement
 
-https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e
+
+
+# Evaluate EScapement
+

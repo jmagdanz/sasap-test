@@ -1,0 +1,171 @@
+---
+title: "Publication Graphics ggplot2"
+author: "Jim Magdanz"
+date: "October 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries
+
+```{r load_libraries}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(DT)
+
+```
+
+CTRL + ALT + i gives you a new command chunk.
+Load example data
+
+```{r load_data}
+
+# https://knb.ecoinformatics.org/#view/urn:uuid:e05865d7-678d-4513-9061-2ab7d979f8e7
+# Search 'permit value'
+permits <- read.csv(url(
+  "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Aa3c58bd6-481e-4c64-aa93-795df10a4664",
+  method = "libcurl"),
+  stringsAsFactors = FALSE)
+
+datatable(permits)
+
+```
+                            
+
+
+```{r plot_1}
+
+ggplot(permits, aes(x=Value, y=StdDev, color=Region, shape=Gear)) +
+  geom_point()
+
+```
+
+```{r bluepoint}
+
+ggplot(permits, aes(x=Value, y=StdDev)) +
+  geom_point(color="blue")
+
+```
+
+```{r histogram}
+
+ggplot(permits,aes(x=Value)) +
+  geom_histogram(color="blue")
+
+```
+
+
+```{r histogram}
+
+ggplot(permits,aes(x=Gear, y=Value)) +
+  geom_boxplot()
+
+```
+
+
+```{r}
+
+ggplot(permits, aes(Gear, Value)) +
+    geom_violin() +
+    geom_point(shape = 1, alpha=.5, position = "jitter")
+
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev)) + 
+  geom_point() +
+  geom_smooth(level=.99S)
+
+## `geom_smooth()` using method = 'loess'
+```
+
+
+```{r}
+
+permits_sum <- permits %>% 
+  group_by(Gear, Region) %>% 
+  summarize(mean_value = mean(Value, na.rm = T))
+
+```
+
+# Now we show the mean value of permits by gear and region using geom_bar and the fill aesthetic.
+
+```{r}
+ggplot(permits_sum, aes(x = Gear, y = mean_value, fill = Region)) +
+  geom_bar(position = "stack", stat = "identity")
+
+
+```
+
+# Setting plot limits
+
+```{r}
+
+permits_se_seine <- permits %>% 
+  filter(Gear == "Purse Seine", 
+         Region == "Southeast")
+
+ggplot(permits_se_seine, aes(Year, Value)) + 
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(limits = c(0, max(permits_se_seine$Value)))
+
+```
+
+
+```{r}
+permits_S04X <- permits %>% 
+  filter(Gear == "Set Net", 
+         Region == "Kotzebue")
+
+ggplot(permits_S04X, aes(Year, Value)) + 
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(limits = c(0, max(permits_S04X$Value)))
+
+```
+
+```{r}
+ggplot(permits, aes(Value, StdDev, color = Gear)) + 
+  geom_point() +
+  theme_classic() +
+  theme(legend.position = "bottom",
+        legend.background = element_rect(fill = "#EEEEEE", color = "black"),
+        legend.title = element_blank(),
+        axis.title = element_text(size = 12))
+```
+
+set up your own theme, save as an object.
+
+```{r}
+my_theme <- theme_bw() +
+  theme(legend.title = element_blank(),
+        panel.grid.major = element_line(size = 1, linetype = 4),
+        panel.grid.minor = element_blank())
+  
+ggplot(permits, aes(Value, StdDev, color = Gear)) +
+  geom_point() +
+  my_theme
+```
+
+
+```{r}
+suppressPackageStartupMessages({
+  library(gridExtra)
+})
+
+p1 <- ggplot(permits_se_seine, aes(Year, Value)) +
+  geom_point() + 
+  geom_line()
+
+p2 <- ggplot(permits %>% filter(Gear == "Purse Seine"), aes(Region, Value)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = function(x) { format(x, scientific = FALSE) })
+
+grid.arrange(p1, p2)
+```
+

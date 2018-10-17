@@ -1,0 +1,12 @@
+---
+title: "Git - Collaboration & Conflict Management"
+author: "Jim Magdanz"
+date: "October 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+To collaborate, you must have shared objectives and good communication.
