@@ -35,12 +35,52 @@ catch_clean <- catch_df %>%
   
   
 head(catch_clean)
+tail(catch_clean)
+
+```
+fix charactor variable
+```{r fix error}
+test <- as.numeric(catch_clean$catch_thousands)
+i <- which(is.na(test)==T)
+catch_clean{i,]
+```
+
+'mutate' to create a new catch column. Fix character error. Convert to numeric. Transform to from K to Unit.
+
+
+```{r Mutate}
+catch_clean_mutated <- catch_clean %>%
+  mutate(catch_thousands = ifelse(catch_thousands =="I",1,catch_thousands)) %>%  # correct OCR error
+  mutate(catch_thousands = as.numeric(catch_thousands)) %>%  # convert to numeric
+  mutate(catch = catch_thousands * 1000) %>% # compute unit values 
+  select(-catch_thousands)  # Drop variable
+
+
+tail(catch_clean_mutated)
 
 ```
 
-Move from wide to long form, using gather function. The "key" is what you are associating columns, here, "species"
+split using 'group_by'
 
-```{r Gather}
+```{r}
+catch_summarize <- catch_clean_mutated %>% 
+  group_by(Region) %>% 
+  summarize(mean_catch = mean(catch),
+            n_obs = n())
 
+head(catch_summarize)
+```
+
+```{r}
+catch_summarize <- catch_clean_mutated %>% 
+  group_by(Region) %>% 
+  summarize(first_year = min(Year),
+            last_year = max(Year),
+            mean_catch = mean(catch),
+            sd_catch = sd(catch),
+            n_obs = n()) %>% 
+  arrange(+first_year)
+
+catch_summarize
 
 ```
