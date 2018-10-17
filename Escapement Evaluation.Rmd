@@ -1,0 +1,53 @@
+---
+title: "Salmon Escapement"
+author: "Jim Magdanz/Jen"
+date: "October 17, 2018"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+#Sources
+
+Daily escapements: [Alaska Department of Fish and Game. 2017. Daily salmon escapement counts from the OceanAK database, Alaska, 1921-2017. Knowledge Network for Biocomplexity. doi:10.5063/F1TX3CKH](http://doi:10.5063/F1TX3CKH)
+
+Escapement Goals: [Andrew Munro and Eric Volk. 2017. Summary of Pacific Salmon Escapement Goals in Alaska with a Review of Escapements from 2007 to 2015. Knowledge Network for Biocomplexity. doi:10.5063/F1TQ5ZRG](http://doi:10.5063/F1TQ5ZRG)
+
+# Prepare Daily Escapement Data
+
+```{r}
+esc <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e", method = "libcurl"), stringsAsFactors = FALSE)
+
+head(esc)
+```
+
+`
+help summarize
+
+```{r}
+esc_BB <- esc %>%
+  filter(SASAP.Region == "Bristol Bay") %>% 
+  group_by(Location) %>% 
+  summarise(count = sum(DailyCount))
+
+head(esc_BB)
+```
+
+
+
+# Prepare Escapment Goal Data
+
+
+
+
+#Evaluate EScapement
+
+https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e
